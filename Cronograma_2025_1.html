@@ -1,0 +1,1069 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronograma Interativo - Disciplinas de Engenharia</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .filter-container label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .filter-container select, .filter-container input {
+            padding: 5px;
+            margin-right: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        input[type="checkbox"] {
+            cursor: pointer;
+        }
+        .completed {
+            background-color: #e6f3ff;
+        }
+        @media (max-width: 600px) {
+            table, th, td {
+                font-size: 14px;
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Cronograma Interativo - Disciplinas de Engenharia</h1>
+    
+    <!-- Introdução à Análise de Estruturas -->
+    <h2>Introdução à Análise de Estruturas</h2>
+    <div class="filter-container">
+        <label for="topic-filter-estruturas">Filtrar por Tópico:</label>
+        <select id="topic-filter-estruturas">
+            <option value="">Todos</option>
+            <option value="Conceitos Básicos sobre Estruturas Reticuladas">Conceitos Básicos</option>
+            <option value="Soluções Fundamentais">Soluções Fundamentais</option>
+            <option value="Método das Forças">Método das Forças</option>
+            <option value="Método dos Deslocamentos">Método dos Deslocamentos</option>
+            <option value="Linhas de Influência">Linhas de Influência</option>
+        </select>
+        
+        <label for="status-filter-estruturas">Filtrar por Status:</label>
+        <select id="status-filter-estruturas">
+            <option value="">Todos</option>
+            <option value="completed">Concluído</option>
+            <option value="not-completed">Não Concluído</option>
+        </select>
+    </div>
+
+    <table id="schedule-table-estruturas">
+        <thead>
+            <tr>
+                <th>Semana</th>
+                <th>Tópico</th>
+                <th>Atividades</th>
+                <th>Progresso</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>09/06 - 15/06</td>
+                <td>Conceitos Básicos sobre Estruturas Reticuladas</td>
+                <td>Ler capítulos iniciais do livro de Martha, assistir aula introdutória, fazer anotações</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-1"></td>
+            </tr>
+            <tr>
+                <td>16/06 - 22/06</td>
+                <td>Conceitos Básicos sobre Estruturas Reticuladas</td>
+                <td>Estudar comportamento linear, resolver 5 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-2"></td>
+            </tr>
+            <tr>
+                <td>23/06 - 29/06</td>
+                <td>Conceitos Básicos sobre Estruturas Reticuladas</td>
+                <td>Estudar GH. Comp. de barras, praticar com Ftool</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-3"></td>
+            </tr>
+            <tr>
+                <td>30/06 - 06/07</td>
+                <td>Conceitos Básicos sobre Estruturas Reticuladas</td>
+                <td>Resolver exercícios práticos, revisar anotações</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-4"></td>
+            </tr>
+            <tr>
+                <td>07/07 - 13/07</td>
+                <td>Soluções Fundamentais</td>
+                <td>Estudar Princípio dos Trabalhos Virtuais, resolver 5 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-5"></td>
+            </tr>
+            <tr>
+                <td>14/07 - 20/07</td>
+                <td>Soluções Fundamentais</td>
+                <td>Estudar PFV e Teoremas de Reciprocidade, praticar exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-6"></td>
+            </tr>
+            <tr>
+                <td>21/07 - 27/07</td>
+                <td>Método das Forças</td>
+                <td>Ler capítulos correspondentes, resolver 8 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-7"></td>
+            </tr>
+            <tr>
+                <td>28/07 - 03/08</td>
+                <td>Método das Forças</td>
+                <td>Praticar problemas hiperestáticos, revisar para 1ª avaliação</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-8"></td>
+            </tr>
+            <tr>
+                <td>04/08 - 10/08</td>
+                <td>Revisão para 1ª Avaliação</td>
+                <td>Fazer simulado, revisar tópicos</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-9"></td>
+            </tr>
+            <tr>
+                <td>11/08 - 17/08</td>
+                <td>Método dos Deslocamentos</td>
+                <td>Estudar fundamentos, ler Sussekind</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-10"></td>
+            </tr>
+            <tr>
+                <td>18/08 - 24/08</td>
+                <td>Método dos Deslocamentos</td>
+                <td>Estudar PDV, resolver 6 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-11"></td>
+            </tr>
+            <tr>
+                <td>25/08 - 31/08</td>
+                <td>Método dos Deslocamentos</td>
+                <td>Praticar problemas práticos, usar Ftool</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-12"></td>
+            </tr>
+            <tr>
+                <td>01/09 - 07/09</td>
+            <td>Revisão para 2ª Avaliação</td>
+                <td>Fazer simulado, revisar tópicos</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-13"></td>
+            </tr>
+            <tr>
+                <td>08/09 - 14/09</td>
+                <td>Linhas de Influência</td>
+                <td>Estudar conceitos e definições, ler Martha</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-14"></td>
+            </tr>
+            <tr>
+                <td>15/09 - 21/09</td>
+                <td>Linhas de Influência</td>
+                <td>Estudar cargas móveis, resolver 5 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-15"></td>
+            </tr>
+            <tr>
+                <td>22/09 - 28/09</td>
+                <td>Linhas de Influência</td>
+                <td>Aplicar em vigas hiperestáticas, praticar envoltória de esforços</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-16"></td>
+            </tr>
+            <tr>
+                <td>29/09 - 30/09</td>
+                <td>Revisão para 3ª Avaliação</td>
+                <td>Fazer simulado, revisar tópicos</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estruturas-17"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Estruturas de Concreto 1 -->
+    <h2>Estruturas de Concreto 1</h2>
+    <div class="filter-container">
+        <label for="topic-filter-concreto">Filtrar por Tópico:</label>
+        <select id="topic-filter-concreto">
+            <option value="">Todos</option>
+            <option value="Generalidades sobre o Concreto">Generalidades sobre o Concreto</option>
+            <option value="Materiais Componentes">Materiais Componentes</option>
+            <option value="Aderência e Ancoragem">Aderência e Ancoragem</option>
+            <option value="Cargas e Mapas de Carga">Cargas e Mapas de Carga</option>
+            <option value="Lajes em Concreto Armado">Lajes em Concreto Armado</option>
+            <option value="Escadas Armadas">Escadas Armadas</option>
+            <option value="Reservatórios">Reservatórios</option>
+            <option value="Resistência e Dimensionamento">Resistência e Dimensionamento</option>
+            <option value="Revisão para Avaliação">Revisão para Avaliação</option>
+        </select>
+        
+        <label for="status-filter-concreto">Filtrar por Status:</label>
+        <select id="status-filter-concreto">
+            <option value="">Todos</option>
+            <option value="completed">Concluído</option>
+            <option value="not-completed">Não Concluído</option>
+        </select>
+    </div>
+
+    <table id="schedule-table-concreto">
+        <thead>
+            <tr>
+                <th>Semana</th>
+                <th>Tópico</th>
+                <th>Atividades</th>
+                <th>Progresso</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>09/06 - 15/06</td>
+                <td>Generalidades sobre o Concreto</td>
+                <td>Ler introdução do livro de Carvalho, assistir aula introdutória, fazer anotações</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-1"></td>
+            </tr>
+            <tr>
+                <td>16/06 - 22/06</td>
+                <td>Generalidades sobre o Concreto</td>
+                <td>Estudar vantagens e aplicações do concreto armado, resolver 3 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-2"></td>
+            </tr>
+            <tr>
+                <td>23/06 - 29/06</td>
+                <td>Materiais Componentes</td>
+                <td>Estudar concreto e aço, ler capítulos correspondentes do livro de Araújo</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-3"></td>
+            </tr>
+            <tr>
+                <td>30/06 - 06/07</td>
+                <td>Materiais Componentes</td>
+                <td>Estudar tensões e deformações, resolver 5 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-4"></td>
+            </tr>
+            <tr>
+                <td>07/07 - 13/07</td>
+                <td>Aderência e Ancoragem</td>
+                <td>Estudar aderência, gancho e ancoragem, praticar exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-5"></td>
+            </tr>
+            <tr>
+                <td>14/07 - 16/07</td>
+                <td>Cargas e Mapas de Carga</td>
+                <td>Estudar determinação de cargas, fazer mapas de carga</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-6"></td>
+            </tr>
+            <tr>
+                <td>17/07</td>
+                <td>Revisão para 1ª Avaliação</td>
+                <td>Fazer simulado, revisar tópicos, preparar para avaliação</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-7"></td>
+            </tr>
+            <tr>
+                <td>18/07 - 24/07</td>
+                <td>Lajes em Concreto Armado</td>
+                <td>Estudar momentos e armaduras de lajes, resolver 6 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-8"></td>
+            </tr>
+            <tr>
+                <td>25/07 - 31/07</td>
+                <td>Escadas Armadas</td>
+                <td>Estudar escadas armadas transversalmente e longitudinalmente</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-9"></td>
+            </tr>
+            <tr>
+                <td>01/08 - 07/08</td>
+                <td>Reservatórios</td>
+                <td>Estudar reservatórios de edifícios, ler capítulos correspondentes</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-10"></td>
+            </tr>
+            <tr>
+                <td>08/08 - 14/08</td>
+                <td>Resistência e Dimensionamento</td>
+                <td>Estudar resistência e dimensionamento, resolver 5 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-11"></td>
+            </tr>
+            <tr>
+                <td>15/08 - 18/08</td>
+                <td>Revisão para 2ª Avaliação</td>
+                <td>Fazer simulado, revisar tópicos, preparar para avaliação</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-12"></td>
+            </tr>
+            <tr>
+                <td>19/08 - 31/08</td>
+                <td>Resistência e Dimensionamento</td>
+                <td>Aplicar dimensionamento em projetos práticos, revisar anotações</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-13"></td>
+            </tr>
+            <tr>
+                <td>01/09 - 07/09</td>
+                <td>Resistência e Dimensionamento</td>
+                <td>Resolver exercícios avançados, estudar aplicações</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-14"></td>
+            </tr>
+            <tr>
+                <td>08/09 - 14/09</td>
+                <td>Resistência e Dimensionamento</td>
+                <td>Praticar com exemplos reais, revisar normas</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-15"></td>
+            </tr>
+            <tr>
+                <td>15/09 - 21/09</td>
+                <td>Resistência e Dimensionamento</td>
+                <td>Estudar casos práticos, resolver 4 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-16"></td>
+            </tr>
+            <tr>
+                <td>22/09 - 24/09</td>
+                <td>Revisão para 3ª Avaliação</td>
+                <td>Fazer simulado, revisar tópicos, preparar para avaliação</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-17"></td>
+            </tr>
+            <tr>
+                <td>25/09 - 30/09</td>
+                <td>Revisão Geral</td>
+                <td>Revisar todos os tópicos, preparar para reposição</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="concreto-18"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Instalações Elétricas e Prediais -->
+    <h2>Instalações Elétricas e Prediais</h2>
+    <div class="filter-container">
+        <label for="topic-filter-eletricas">Filtrar por Tópico:</label>
+        <select id="topic-filter-eletricas">
+            <option value="">Todos</option>
+            <option value="Conceitos Básicos">Conceitos Básicos</option>
+            <option value="Geração e Distribuição">Geração e Distribuição</option>
+            <option value="Projetos Elétricos">Projetos Elétricos</option>
+            <option value="Luminotécnica">Luminotécnica</option>
+            <option value="Cargas e Demanda">Cargas e Demanda</option>
+            <option value="Circuitos e Condutores">Circuitos e Condutores</option>
+            <option value="Proteção Elétrica">Proteção Elétrica</option>
+            <option value="SPDA">SPDA</option>
+            <option value="Segurança">Segurança</option>
+        </select>
+        
+        <label for="status-filter-eletricas">Filtrar por Status:</label>
+        <select id="status-filter-eletricas">
+            <option value="">Todos</option>
+            <option value="completed">Concluído</option>
+            <option value="not-completed">Não Concluído</option>
+        </select>
+    </div>
+
+    <table id="schedule-table-eletricas">
+        <thead>
+            <tr>
+                <th>Semana</th>
+                <th>Tópico</th>
+                <th>Atividades</th>
+                <th>Progresso</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>09/06 - 15/06</td>
+                <td>Conceitos Básicos</td>
+                <td>Revisar tensão, corrente, resistor, ler Cotrim</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="eletricas-1"></td>
+            </tr>
+            <tr>
+                <td>16/06 - 22/06</td>
+                <td>Conceitos Básicos</td>
+                <td>Revisar indutor e capacitor, resolver 4 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="eletricas-2"></td>
+            </tr>
+            <tr>
+                <td>23/06 - 29/06</td>
+                <td>Geração e Distribuição</td>
+                <td>Estudar potência, energia elétrica, princípios de geração</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="eletricas-3"></td>
+            </tr>
+            <tr>
+                <td>30/06 - 06/07</td>
+                <td>Geração e Distribuição</td>
+                <td>Estudar distribuição, transmissão, tarifação, ler Creder</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="eletricas-4"></td>
+            </tr>
+            <tr>
+                <td>07/07 - 13/07</td>
+                <td>Projetos Elétricos</td>
+                <td>Estudar introdução a projetos elétricos, normas NBR 5410</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="eletricas-5"></td>
+            </tr>
+            <tr>
+                <td>14/07 - 20/07</td>
+                <td>Luminotécnica</td>
+                <td>Estudar história das lâmpadas, conceitos luminotécnicos</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="eletricas-6"></td>
+            </tr>
+            <tr>
+                <td>21/07 - 27/07</td>
+                <td>Luminotécnica</td>
+                <td>Praticar método dos lumens com Dialux Evo</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="eletricas-7"></td>
+            </tr>
+            <tr>
+                <td>28/07 - 03/08</td>
+                <td>Cargas e Demanda</td>
+                <td>Estudar previsão de cargas, demanda residencial</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="eletricas-8"></td>
+            </tr>
+            <tr>
+                <td>04/08 - 10/08</td>
+                <td>Cargas e Demanda</td>
+                <td>Estudar demanda em unidades não residenciais, resolver exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="eletricas-9"></td>
+            </tr>
+            <tr>
+                <td>11/08 - 17/08</td>
+                <td>Circuitos e Condutores</td>
+                <td>Estudar divisão de circuitos, dimensionamento de condutores</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="eletricas-10"></td>
+            </tr>
+            <tr>
+                <td>18/08 - 24/08</td>
+                <td>Circuitos e Condutores</td>
+                <td>Dimensionar eletrodutos, resolver 5 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="eletricas-11"></td>
+            </tr>
+            <tr>
+                <td>25/08 - 31/08</td>
+                <td>Proteção Elétrica</td>
+                <td>Estudar dispositivos de proteção, choque elétrico</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="eletricas-12"></td>
+            </tr>
+            <tr>
+                <td>01/09 - 07/09</td>
+                <td>SPDA</td>
+                <td>Estudar proteção contra descargas atmosféricas, método da esfera rolante</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="eletricas-13"></td>
+            </tr>
+            <tr>
+                <td>08/09 - 14/09</td>
+                <td>SPDA</td>
+                <td>Aplicar métodos Franklin e Gaiola de Faraday, resolver exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="eletricas-14"></td>
+            </tr>
+            <tr>
+                <td>15/09 - 21/09</td>
+                <td>Segurança</td>
+                <td>Estudar segurança em instalações elétricas, ler Cavalin</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="eletricas-15"></td>
+            </tr>
+            <tr>
+                <td>22/09 - 28/09</td>
+                <td>Revisão Geral</td>
+                <td>Revisar tópicos, resolver simulados</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="eletricas-16"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Instalações Hidrossanitárias -->
+    <h2>Instalações Hidrossanitárias</h2>
+    <div class="filter-container">
+        <label for="topic-filter-hidrossanitarias">Filtrar por Tópico:</label>
+        <select id="topic-filter-hidrossanitarias">
+            <option value="">Todos</option>
+            <option value="Água Fria">Água Fria</option>
+            <option value="Combate a Incêndio">Combate a Incêndio</option>
+            <option value="Esgoto Sanitário">Esgoto Sanitário</option>
+            <option value="Águas Pluviais">Águas Pluviais</option>
+            <option value="Água Quente">Água Quente</option>
+            <option value="Gás">Gás</option>
+            <option value="Projeto">Projeto</option>
+            <option value="Avaliação">Avaliação</option>
+        </select>
+        
+        <label for="status-filter-hidrossanitarias">Filtrar por Status:</label>
+        <select id="status-filter-hidrossanitarias">
+            <option value="">Todos</option>
+            <option value="completed">Concluído</option>
+            <option value="not-completed">Não Concluído</option>
+        </select>
+    </div>
+
+    <table id="schedule-table-hidrossanitarias">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Tópico</th>
+                <th>Atividades</th>
+                <th>Progresso</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>09/06/2025</td>
+                <td>Água Fria</td>
+                <td>Estudar ementa, terminologia, ler Macintyre</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-1"></td>
+            </tr>
+            <tr>
+                <td>11/06/2025</td>
+                <td>Água Fria</td>
+                <td>Estudar instalações de água fria, fazer anotações</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-2"></td>
+            </tr>
+            <tr>
+                <td>16/06/2025</td>
+                <td>Água Fria</td>
+                <td>Continuar estudo de água fria, resolver 3 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-3"></td>
+            </tr>
+            <tr>
+                <td>18/06/2025</td>
+                <td>Água Fria</td>
+                <td>Estudar componentes de água fria, ler Carvalho Junior</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-4"></td>
+            </tr>
+            <tr>
+                <td>25/06/2025</td>
+                <td>Água Fria</td>
+                <td>Praticar dimensionamento de água fria</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-5"></td>
+            </tr>
+            <tr>
+                <td>30/06/2025</td>
+                <td>Água Fria</td>
+                <td>Resolver exercícios de água fria, revisar anotações</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-6"></td>
+            </tr>
+            <tr>
+                <td>02/07/2025</td>
+                <td>Combate a Incêndio</td>
+                <td>Estudar instalações de combate a incêndio, ler Brentano</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-7"></td>
+            </tr>
+            <tr>
+                <td>07/07/2025</td>
+                <td>Combate a Incêndio</td>
+                <td>Continuar estudo de combate a incêndio, resolver 4 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-8"></td>
+            </tr>
+            <tr>
+                <td>09/07/2025</td>
+                <td>Combate a Incêndio</td>
+                <td>Exercícios de dimensionamento de instalações de combate a incêndio</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-9"></td>
+            </tr>
+            <tr>
+                <td>14/07/2025</td>
+                <td>Avaliação</td>
+                <td>Preparar para 1ª avaliação, fazer simulado</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-10"></td>
+            </tr>
+            <tr>
+                <td>16/07/2025</td>
+                <td>Esgoto Sanitário</td>
+                <td>Estudar instalações de esgoto sanitário, ler Creder</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-11"></td>
+            </tr>
+            <tr>
+                <td>21/07/2025</td>
+                <td>Esgoto Sanitário</td>
+                <td>Continuar estudo de esgoto sanitário, resolver 3 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-12"></td>
+            </tr>
+            <tr>
+                <td>23/07/2025</td>
+                <td>Esgoto Sanitário</td>
+                <td>Praticar dimensionamento de esgoto sanitário</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-13"></td>
+            </tr>
+            <tr>
+                <td>28/07/2025</td>
+                <td>Águas Pluviais</td>
+                <td>Estudar instalações de águas pluviais, ler NBR 10844</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-14"></td>
+            </tr>
+            <tr>
+                <td>30/07/2025</td>
+                <td>Águas Pluviais</td>
+                <td>Continuar estudo de águas pluviais, resolver 3 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-15"></td>
+            </tr>
+            <tr>
+                <td>06/08/2025</td>
+                <td>Esgoto Sanitário e Águas Pluviais</td>
+                <td>Praticar projetos integrados, revisar anotações</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-16"></td>
+            </tr>
+            <tr>
+                <td>11/08/2025</td>
+                <td>Esgoto Sanitário e Águas Pluviais</td>
+                <td>Resolver exercícios avançados de esgoto e pluviais</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-17"></td>
+            </tr>
+            <tr>
+                <td>13/08/2025</td>
+                <td>Avaliação</td>
+                <td>Preparar para 2ª avaliação, fazer simulado</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-18"></td>
+            </tr>
+            <tr>
+                <td>18/08/2025</td>
+                <td>Água Quente</td>
+                <td>Estudar instalações de água quente, ler Botelho</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-19"></td>
+            </tr>
+            <tr>
+                <td>20/08/2025</td>
+                <td>Água Quente</td>
+                <td>Continuar estudo de água quente, resolver 3 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-20"></td>
+            </tr>
+            <tr>
+                <td>25/08/2025</td>
+                <td>Água Quente</td>
+                <td>Praticar dimensionamento de água quente</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-21"></td>
+            </tr>
+            <tr>
+                <td>27/08/2025</td>
+                <td>Gás</td>
+                <td>Estudar instalações de gás, ler NBR 13523</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-22"></td>
+            </tr>
+            <tr>
+                <td>01/09/2025</td>
+                <td>Gás</td>
+                <td>Continuar estudo de gás, resolver 3 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-23"></td>
+            </tr>
+            <tr>
+                <td>03/09/2025</td>
+                <td>Gás</td>
+                <td>Praticar dimensionamento de instalações de gás</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-24"></td>
+            </tr>
+            <tr>
+                <td>08/09/2025</td>
+                <td>Avaliação</td>
+                <td>Preparar para 3ª avaliação, fazer simulado</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-25"></td>
+            </tr>
+            <tr>
+                <td>10/09/2025</td>
+                <td>Projeto</td>
+                <td>Orientações para elaboração do projeto, iniciar planejamento</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-26"></td>
+            </tr>
+            <tr>
+                <td>15/09/2025</td>
+                <td>Projeto</td>
+                <td>Acompanhar elaboração do projeto, resolver dúvidas</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-27"></td>
+            </tr>
+            <tr>
+                <td>17/09/2025</td>
+                <td>Projeto</td>
+                <td>Continuar elaboração do projeto, revisar progresso</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-28"></td>
+            </tr>
+            <tr>
+                <td>22/09/2025</td>
+                <td>Projeto</td>
+                <td>Finalizar projeto, preparar apresentação</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-29"></td>
+            </tr>
+            <tr>
+                <td>24/09/2025</td>
+                <td>Avaliação</td>
+                <td>Entrega e apresentação do projeto, preparar para 4ª avaliação</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="hidrossanitarias-30"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Estradas e Transportes 2 -->
+    <h2>Estradas e Transportes 2</h2>
+    <div class="filter-container">
+        <label for="topic-filter-estradas">Filtrar por Tópico:</label>
+        <select id="topic-filter-estradas">
+            <option value="">Todos</option>
+            <option value="Introdução">Introdução</option>
+            <option value="Terraplenagem">Terraplenagem</option>
+            <option value="Equipamentos">Equipamentos</option>
+            <option value="Custos">Custos</option>
+            <option value="Pedreiras">Pedreiras</option>
+            <option value="Geotecnia">Geotecnia</option>
+            <option value="Drenagem">Drenagem</option>
+            <option value="Visita Técnica">Visita Técnica</option>
+            <option value="Avaliação">Avaliação</option>
+        </select>
+        
+        <label for="status-filter-estradas">Filtrar por Status:</label>
+        <select id="status-filter-estradas">
+            <option value="">Todos</option>
+            <option value="completed">Concluído</option>
+            <option value="not-completed">Não Concluído</option>
+        </select>
+    </div>
+
+    <table id="schedule-table-estradas">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Tópico</th>
+                <th>Atividades</th>
+                <th>Progresso</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>09/06/2025</td>
+                <td>Introdução</td>
+                <td>Apresentação da disciplina, revisar ementa</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-1"></td>
+            </tr>
+            <tr>
+                <td>11/06/2025</td>
+                <td>Terraplenagem</td>
+                <td>Estudar histórico e planejamento, ler Abram</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-2"></td>
+            </tr>
+            <tr>
+                <td>16/06/2025</td>
+                <td>Equipamentos</td>
+                <td>Estudar classificação de equipamentos, fazer anotações</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-3"></td>
+            </tr>
+            <tr>
+                <td>18/06/2025</td>
+                <td>Equipamentos</td>
+                <td>Continuar classificação de equipamentos, resolver 3 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-4"></td>
+            </tr>
+            <tr>
+                <td>25/06/2025</td>
+                <td>Terraplenagem</td>
+                <td>Revisar diagrama de massas, ler Ricardo</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-5"></td>
+            </tr>
+            <tr>
+                <td>30/06 - 09/07</td>
+                <td>Equipamentos</td>
+                <td>Estudar estimativa de produção horária, resolver 5 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-6"></td>
+            </tr>
+            <tr>
+                <td>21/07/2025</td>
+                <td>Equipamentos</td>
+                <td>Continuar estimativa de produção horária, praticar cálculos</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-7"></td>
+            </tr>
+            <tr>
+                <td>23/07/2025</td>
+                <td>Equipamentos</td>
+                <td>Finalizar estimativa de produção, resolver exercícios avançados</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-8"></td>
+            </tr>
+            <tr>
+                <td>28/07/2025</td>
+                <td>Avaliação</td>
+                <td>Preparar para 1ª avaliação, fazer simulado</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-9"></td>
+            </tr>
+            <tr>
+                <td>30/07/2025</td>
+                <td>Equipamentos</td>
+                <td>Resumir fatores para seleção de equipamentos, ler DNIT</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-10"></td>
+            </tr>
+            <tr>
+                <td>04/08/2025</td>
+                <td>Custos</td>
+                <td>Estudar custo horário de equipamentos, resolver 3 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-11"></td>
+            </tr>
+            <tr>
+                <td>06/08/2025</td>
+                <td>Custos</td>
+                <td>Continuar custo horário, praticar cálculos</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-12"></td>
+            </tr>
+            <tr>
+                <td>11/08/2025</td>
+                <td>Pedreiras</td>
+                <td>Estudar exploração de pedreiras, ler Pimenta</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-13"></td>
+            </tr>
+            <tr>
+                <td>13/08 - 18/08</td>
+                <td>Terraplenagem</td>
+                <td>Estudar execução de serviços de terraplenagem, resolver exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-14"></td>
+            </tr>
+            <tr>
+                <td>20/08 - 25/08</td>
+                <td>Geotecnia</td>
+                <td>Estudar estudos geotécnicos, ler Senço</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-15"></td>
+            </tr>
+            <tr>
+                <td>27/08/2025</td>
+                <td>Avaliação</td>
+                <td>Preparar para 2ª avaliação, fazer simulado</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-16"></td>
+            </tr>
+            <tr>
+                <td>01/09 - 17/09</td>
+                <td>Drenagem</td>
+                <td>Estudar drenagem de rodovias, resolver 6 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-17"></td>
+            </tr>
+            <tr>
+                <td>22/09/2025</td>
+                <td>Visita Técnica</td>
+                <td>Participar de visita técnica, fazer relatório</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-18"></td>
+            </tr>
+            <tr>
+                <td>24/09/2025</td>
+                <td>Outros Assuntos</td>
+                <td>Estudar tópicos subjacentes, revisar anotações</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-19"></td>
+            </tr>
+            <tr>
+                <td>29/09/2025</td>
+                <td>Avaliação</td>
+                <td>Preparar para 3ª avaliação, fazer simulado</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-20"></td>
+            </tr>
+            <tr>
+                <td>01/10/2025</td>
+                <td>Avaliação</td>
+                <td>Preparar para reposição, revisar tópicos</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="estradas-21"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Tópicos de Engenharia 2 -->
+    <h2>Tópicos de Engenharia 2</h2>
+    <div class="filter-container">
+        <label for="topic-filter-topicos">Filtrar por Tópico:</label>
+        <select id="topic-filter-topicos">
+            <option value="">Todos</option>
+            <option value="Mecânica dos Solos">Mecânica dos Solos</option>
+            <option value="Elasticidade">Elasticidade</option>
+            <option value="Plasticidade">Plasticidade</option>
+            <option value="Escoamento">Escoamento</option>
+            <option value="Elementos Finitos">Elementos Finitos</option>
+            <option value="Software">Software</option>
+            <option value="Aplicações Geotécnicas">Aplicações Geotécnicas</option>
+            <option value="Projeto e Avaliação">Projeto e Avaliação</option>
+        </select>
+        
+        <label for="status-filter-topicos">Filtrar por Status:</label>
+        <select id="status-filter-topicos">
+            <option value="">Todos</option>
+            <option value="completed">Concluído</option>
+            <option value="not-completed">Não Concluído</option>
+        </select>
+    </div>
+
+    <table id="schedule-table-topicos">
+        <thead>
+            <tr>
+                <th>Semana</th>
+                <th>Tópico</th>
+                <th>Atividades</th>
+                <th>Progresso</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>10/06 - 12/06</td>
+                <td>Mecânica dos Solos</td>
+                <td>Estudar introdução, ler Souza Pinto</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="topicos-1"></td>
+            </tr>
+            <tr>
+                <td>17/06 - 26/06</td>
+                <td>Mecânica dos Solos</td>
+                <td>Revisar conceitos de geotecnia, resolver 4 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="topicos-2"></td>
+            </tr>
+            <tr>
+                <td>26/06 - 03/07</td>
+                <td>Elasticidade</td>
+                <td>Estudar teoria da elasticidade linear, ler Potts</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="topicos-3"></td>
+            </tr>
+            <tr>
+                <td>08/07 - 15/07</td>
+                <td>Plasticidade</td>
+                <td>Estudar teoria da plasticidade, resolver 5 exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="topicos-4"></td>
+            </tr>
+            <tr>
+                <td>17/07 - 24/07</td>
+                <td>Escoamento</td>
+                <td>Estudar escoamento em solos, praticar exercícios</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="topicos-5"></td>
+            </tr>
+            <tr>
+                <td>29/07 - 07/08</td>
+                <td>Elementos Finitos</td>
+                <td>Estudar método dos elementos finitos, ler Potts</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="topicos-6"></td>
+            </tr>
+            <tr>
+                <td>12/08 - 19/08</td>
+                <td>Software</td>
+                <td>Aprender software de elementos finitos, realizar tutoriais</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="topicos-7"></td>
+            </tr>
+            <tr>
+                <td>21/08 - 02/09</td>
+                <td>Aplicações Geotécnicas</td>
+                <td>Modelar estado inicial de tensões, resolver 3 cenários</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="topicos-8"></td>
+            </tr>
+            <tr>
+                <td>04/09 - 10/09</td>
+                <td>Aplicações Geotécnicas</td>
+                <td>Modelar escoamento e adensamento, praticar com software</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="topicos-9"></td>
+            </tr>
+            <tr>
+                <td>11/09/2025</td>
+                <td>Projeto e Avaliação</td>
+                <td>Discutir projeto de avaliação, planejar execução</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="topicos-10"></td>
+            </tr>
+            <tr>
+                <td>16/09/2025</td>
+                <td>Projeto e Avaliação</td>
+                <td>Revisar dúvidas, acompanhar projeto</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="topicos-11"></td>
+            </tr>
+            <tr>
+                <td>18/09/2025</td>
+                <td>Projeto e Avaliação</td>
+                <td>Preparar para 1ª avaliação, finalizar projeto</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="topicos-12"></td>
+            </tr>
+            <tr>
+                <td>23/09/2025</td>
+                <td>Projeto e Avaliação</td>
+                <td>Preparar para 2ª e 3ª avaliações, revisar tópicos</td>
+                <td><input type="checkbox" class="progress-checkbox" data-id="topicos-13"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        // Função para inicializar filtros e progresso para cada tabela
+        function initializeTable(tableId, topicFilterId, statusFilterId) {
+            // Salvar progresso no localStorage
+            document.querySelectorAll(`#${tableId} .progress-checkbox`).forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    localStorage.setItem(`progress-${this.dataset.id}`, this.checked);
+                    this.closest('tr').classList.toggle('completed', this.checked);
+                });
+
+                // Carregar progresso salvo
+                const savedProgress = localStorage.getItem(`progress-${checkbox.dataset.id}`);
+                if (savedProgress === 'true') {
+                    checkbox.checked = true;
+                    checkbox.closest('tr').classList.add('completed');
+                }
+            });
+
+            // Função de filtro
+            function filterTable() {
+                const topicFilter = document.getElementById(topicFilterId).value;
+                const statusFilter = document.getElementById(statusFilterId).value;
+                const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+
+                rows.forEach(row => {
+                    const topic = row.cells[1].textContent;
+                    const isCompleted = row.querySelector('.progress-checkbox').checked;
+
+                    const topicMatch = !topicFilter || topic === topicFilter;
+                    const statusMatch = !statusFilter || 
+                        (statusFilter === 'completed' && isCompleted) || 
+                        (statusFilter === 'not-completed' && !isCompleted);
+
+                    row.style.display = topicMatch && statusMatch ? '' : 'none';
+                });
+            }
+
+            // Aplicar filtros ao mudar seleção
+            document.getElementById(topicFilterId).addEventListener('change', filterTable);
+            document.getElementById(statusFilterId).addEventListener('change', filterTable);
+        }
+
+        // Inicializar cada tabela
+        initializeTable('schedule-table-estruturas', 'topic-filter-estruturas', 'status-filter-estruturas');
+        initializeTable('schedule-table-concreto', 'topic-filter-concreto', 'status-filter-concreto');
+        initializeTable('schedule-table-eletricas', 'topic-filter-eletricas', 'status-filter-eletricas');
+        initializeTable('schedule-table-hidrossanitarias', 'topic-filter-hidrossanitarias', 'status-filter-hidrossanitarias');
+        initializeTable('schedule-table-estradas', 'topic-filter-estradas', 'status-filter-estradas');
+        initializeTable('schedule-table-topicos', 'topic-filter-topicos', 'status-filter-topicos');
+    </script>
+</body>
+</html>
